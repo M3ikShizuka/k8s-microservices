@@ -1,0 +1,17 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ingress-nginx-{{ required "Container serviceName is required!" .Values.serviceName }}-db
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: sadb.localhost
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: {{ .Release.Name }}-{{ .Values.services.name }}-service
+#             port:
+#               number: {{ required "Ingress service port number is required!" .Values.servicePort }}

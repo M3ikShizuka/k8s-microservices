@@ -1,0 +1,7 @@
+services:
+    type: NodePort
+    ports:
+      - name: "service-port"
+        port: *servicePort
+        targetPort: *servicePort
+        nodePort: 31000

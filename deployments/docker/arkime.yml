@@ -1,0 +1,81 @@
+version: '2.2'
+
+x-es_instance: &_es_instance
+    image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
+    mem_limit: $ES_MAX_MEM
+    ulimits:
+        nofile:
+            soft: 65535
+            hard: 65535
+        memlock:
+            soft: -1
+            hard: -1
+    networks:
+        - microservices-network
+
+
+services:
+    es01:
+        <<: *_es_instance
+        container_name: $ES_NODE1
+        environment:
+            - node.name=$ES_NODE1
+            - discovery.seed_hosts=$ES_NODE2,$ES_NODE3
+            # default
+            - cluster.name=es-arkime-cluster
+            - cluster.initial_master_nodes=$ES_NODE1,$ES_NODE2,$ES_NODE3
+            - bootstrap.memory_lock=true
+        volumes:
+            - $ES_DATA_DIR/$ES_NODE1:/usr/share/elasticsearch/data
+    es02:
+        <<: *_es_instance
+        container_name: $ES_NODE2
+        environment:
+            - node.name=$ES_NODE2
+            - discovery.seed_hosts=$ES_NODE1,$ES_NODE3
+            # default
+            - cluster.name=es-arkime-cluster
+            - cluster.initial_master_nodes=$ES_NODE1,$ES_NODE2,$ES_NODE3
+            - bootstrap.memory_lock=true
+        volumes:
+            - $ES_DATA_DIR/$ES_NODE2:/usr/share/elasticsearch/data
+    es03:
+        <<: *_es_instance
+        container_name: $ES_NODE3
+        environment:
+            - node.name=$ES_NODE3
+            - discovery.seed_hosts=$ES_NODE1,$ES_NODE2
+            # default
+            - cluster.name=es-arkime-cluster
+            - cluster.initial_master_nodes=$ES_NODE1,$ES_NODE2,$ES_NODE3
+            - bootstrap.memory_lock=true
+        volumes:
+            - $ES_DATA_DIR/$ES_NODE3:/usr/share/elasticsearch/data
+
+    arkime:
+        build:
+            context: ${ProjectWorkDir_Arkime}
+            dockerfile: Dockerfile
+        depends_on:
+            - $ES_NODE1
+            - $ES_NODE2
+            - $ES_NODE3
+        environment:
+            - ES_HOST=$ES_NODE1
+            - ES_PORT=9200
+        ports:
+            - $ARKIME_PORT:8005
+        volumes:
+            - arkime_config:/data/config
+            - arkime_logs:/data/logs
+            - $PCAP_DIR:/data/pcap
+        networks:
+            - microservices-network
+
+volumes:
+    arkime_config:
+    arkime_logs:
+
+
+networks:
+    microservices-network:

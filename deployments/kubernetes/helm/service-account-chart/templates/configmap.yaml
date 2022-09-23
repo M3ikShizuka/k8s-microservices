@@ -1,0 +1,18 @@
+# !!!WARNING!!!
+# Edit config in: ./deploy-config/configmap.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ required "Deployment name is required!" .Values.deployments.name }}-confmap
+data:
+  SERVICE_ACCOUNT_CLIENT_ID: client-auth-code-service-account
+  SERVICE_ACCOUNT_CLIENT_SECRET: client-secret-service-account
+  SERVICE_ACCOUNT_HYDRA_PROTO: "http"
+  SERVICE_ACCOUNT_HYDRA_PUBLIC_HOST: "http://public.hydra.localhost" 
+  SERVICE_ACCOUNT_HYDRA_PUBLIC_HOST_PRIVATE_LAN: "http://chart-hydra1-public.microservice.svc.cluster.local:4444" 
+  SERVICE_ACCOUNT_HYDRA_ADMIN_HOST_PRIVATE_LAN: "http://chart-hydra1-admin.microservice.svc.cluster.local:4445" 
+  SERVICE_ACCOUNT_REDIRECT_ADDR: "account.localhost"
+  PGDATABASE: db_service_account
+  PGHOST: host-db-postgresql-sa
+  PGPORT: "26257"

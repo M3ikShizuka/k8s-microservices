@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ required "Container serviceName is required!" .Values.serviceName }}-pv-claim
+spec:
+  storageClassName: manual
+  accessModes: {{ index .Values.database.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.database.storageSize }}

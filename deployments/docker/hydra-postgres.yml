@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  hydra-migrate:
+    environment:
+      - DSN=postgres://${HYDRA_POSTGRES_USER:? Hydra postgress user isn't set!}:${HYDRA_POSTGRES_PASSWORD:? Hydra postgress password isn't set!}@host-db-postgresql-hydra:${HYDRA_POSTGRES_DB_PORT}/${HYDRA_POSTGRES_DB:? Hydra postgress DB name isn't set!}?sslmode=disable&max_conns=20&max_idle_conns=4
+  hydra:
+    environment:
+      - DSN=postgres://${HYDRA_POSTGRES_USER:? Hydra postgress user isn't set!}:${HYDRA_POSTGRES_PASSWORD:? Hydra postgress password isn't set!}@host-db-postgresql-hydra:${HYDRA_POSTGRES_DB_PORT}/${HYDRA_POSTGRES_DB:? Hydra postgress DB name isn't set!}?sslmode=disable&max_conns=20&max_idle_conns=4
+  postgresd:
+    container_name: db-postgresql-hydra
+    hostname: host-db-postgresql-hydra
+    image: postgres:9.6
+    ports:
+      - "${HYDRA_POSTGRES_DB_PORT}:${HYDRA_POSTGRES_DB_PORT}"
+    environment:
+      - POSTGRES_USER=${HYDRA_POSTGRES_USER:? Hydra postgress user isn't set!}
+      - POSTGRES_PASSWORD=${HYDRA_POSTGRES_PASSWORD:? Hydra postgress password isn't set!}
+      - POSTGRES_DB=${HYDRA_POSTGRES_DB:? Hydra postgress DB name isn't set!}
+    command: -p ${HYDRA_POSTGRES_DB_PORT}
+    networks:
+      - microservices-network

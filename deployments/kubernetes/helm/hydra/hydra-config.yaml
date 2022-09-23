@@ -1,0 +1,85 @@
+hydra:
+   config:
+    # HYDRA CONIFG: DEV VERSION !hydra
+    # DOC: https://www.ory.sh/docs/hydra/reference/configuration
+    # Configuration editor: https://www.ory.sh/docs/hydra/reference/configuration-editor
+    # Example hydra config file hydra\internal\config\config.yaml
+    
+    # serve controls the configuration for the http(s) daemon(s).
+    serve:
+      cookies:
+        # specify the SameSite mode that cookies should be sent with
+        same_site_mode: Lax
+      public:
+        port: 4444
+      admin:
+        port: 4445
+      tls:
+        allow_termination_from:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+    
+    urls:
+      self:
+        # This value will be used as the "issuer" in access and ID tokens. It must be
+        # specified and using HTTPS protocol, unless --dangerous-force-http is set. This should typically be equal
+        # to the public value.
+        issuer: http://public.hydra.localhost
+    
+      consent: http://account.localhost/consent
+      # Sets the login endpoint of the User Login & Consent flow. Defaults to an internal fallback URL.
+      login: http://account.localhost/login
+      # Sets the logout endpoint. Defaults to an internal fallback URL.
+      logout: http://account.localhost/logout
+      # When a user agent requests to logout, it will be redirected to this url afterwards per default.
+      post_logout_redirect: http://account.localhost/
+    
+    # -- The secrets have to be provided as a string slice, example:
+    # system:
+    #   - "OG5XbmxXa3dYeGplQXpQanYxeEFuRUFa"
+    #   - "foo bar 123 456 lorem"
+    #   - "foo bar 123 456 lorem 1"
+    #   - "foo bar 123 456 lorem 2"
+    #   - "foo bar 123 456 lorem 3"
+    # The secrets section configures secrets used for encryption and signing of several systems. All secrets can be rotated,
+    # for more information on this topic navigate to:
+    # -> https://www.ory.sh/docs/hydra/advanced#rotation-of-hmac-token-signing-and-database-and-cookie-encryption-keys
+    secrets:
+      # The system secret must be at least 16 characters long. If none is provided, one will be generated. They key
+      #	is used to encrypt sensitive data using AES-GCM (256 bit) and validate HMAC signatures.
+      #
+      # The first item in the list is used for signing and encryption. The whole list is used for verifying signatures
+      # and decryption.
+      system:
+        - JCtMbNuzhbDyc835ks8HNwjwm4ligKW1
+    
+    # oidc configures OpenID Connect features.
+    oidc:
+      # subject_identifiers configures the Subject Identifier algorithm.
+      #
+      # For more information please head over to the documentation:
+      # -> https://www.ory.sh/docs/hydra/advanced#subject-identifier-algorithms
+      subject_identifiers:
+        # which algorithms to enable. Defaults to "public"
+        supported_types:
+          - pairwise
+          - public
+        # configures the pairwise algorithm
+        pairwise:
+          # if "pairwise" is enabled, the salt must be defined.
+          salt: Y01aAQTyjM4BKpzQxefT1hhvIikwDqpH
+    
+    # configures time to live
+    # "-1" == never expire.
+    ttl:
+      # configures how long a user login and consent flow may take. Defaults to 1h.
+      login_consent_request: 1h
+      # configures how long access tokens are valid. Defaults to 1h.
+      access_token: 1h
+      # configures how long refresh tokens are valid. Defaults to 720h. Set to -1 for refresh tokens to never expire.
+      refresh_token: 720h
+      # configures how long id tokens are valid. Defaults to 1h.
+      id_token: 1h
+      # configures how long auth codes are valid. Defaults to 10m.
+      auth_code: 10m

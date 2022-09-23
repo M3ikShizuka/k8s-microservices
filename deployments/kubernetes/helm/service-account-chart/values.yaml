@@ -1,0 +1,32 @@
+# Default values for service-account.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceName: &serviceName service-account
+servicePort: &servicePort 3000
+serviceDebugPort: &serviceDebugPort 2345
+
+deployments:
+  name: *serviceName
+  replicaCount: 1
+  containers:
+    app:
+      name: *serviceName
+      image: m3ikshizuka/service-account:0.0.1
+      ports:
+      - containerPort: *servicePort
+      - containerPort: *serviceDebugPort
+
+services:
+  name: *serviceName
+  spec:
+    # type: LoadBalancer
+    type: NodePort
+    ports:
+    - name: "service-port"
+      port: *servicePort
+      targetPort: *servicePort
+    - name: "debug-port"
+      port: *serviceDebugPort
+      protocol: TCP
+      nodePort: 32000

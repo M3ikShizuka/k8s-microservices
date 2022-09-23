@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Release.Name }}-{{ required "Deployment name is required!" .Values.deployments.name }}-deployment
+  name: {{ .Release.Name }}-{{ required "Deployment name is required!" .Values.deployments.name }}-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: {{ .Release.Name }}
+    spec:
+      hostname: host-{{ required "Deployment name is required!" .Values.deployments.name }}
+      restartPolicy: Always
+      containers:
+        - name: {{ required "Container name is required!" .Values.deployments.containers.app.name }}
+          image: {{ required "Container image is required!" .Values.deployments.containers.app.image }}
+          # args: ["-p {{ required "Container image is required!" .Values.servicePort }}"]
+          ports: {{ required "Containers ports are required!" .Values.deployments.containers.app.ports | toYaml | trim | nindent 10 }}
+          envFrom:
+            - secretRef:
+                name: {{ required "Container serviceName is required!" .Values.serviceName }}-secrets
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: volime-{{ required "Container serviceName is required!" .Values.serviceName }}
+      volumes:
+        - name: volime-{{ required "Container serviceName is required!" .Values.serviceName }}
+          persistentVolumeClaim:
+            claimName: {{ required "Container serviceName is required!" .Values.serviceName }}-pv-claim

@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-service-account
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: account.localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-{{ .Values.services.name }}-service
+            port:
+              number: {{ required "Ingress service port number is required!" .Values.servicePort }}

@@ -1,0 +1,39 @@
+# !!!WARNING!!!
+# Edit config in: ./deploy-config/values.yaml
+#
+# Default values for service-account.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceName: &serviceName ${HYDRA_DB_POSTGRESQL_SERVICE_NAME}
+servicePort: &servicePort ${HYDRA_POSTGRES_DB_PORT}
+
+deployments:
+  name: *serviceName
+  replicaCount: 1
+  containers:
+    app:
+      name: *serviceName
+      image: bitnami/postgresql
+      ports:
+      - containerPort: *servicePort
+
+services:
+  name: *serviceName
+  spec:
+    type: NodePort
+    ports:
+    - port: *servicePort
+      protocol: TCP
+      nodePort: 31000
+
+database:
+  storageSize: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+secrets:
+  stringData:
+    POSTGRES_USER: ${HYDRA_POSTGRES_USER}
+    POSTGRES_PASSWORD: ${HYDRA_POSTGRES_PASSWORD}
+    POSTGRES_DB: ${HYDRA_POSTGRES_DB}

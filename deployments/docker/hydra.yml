@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  hydra:
+    ## Use docker image:
+    # image: oryd/hydra:v1.11.7
+    ## Build own
+    # Build can be either specified as a single string defining a context path, or as a detailed build definition.
+    # In the former case, the whole path is used as a Docker context to execute a docker build, looking for a canonical Dockerfile at context root.
+    # From <https://docs.docker.com/compose/compose-file/build/> 
+
+    # Paths rules: title "Illustrative sample" https://docs.docker.com/compose/compose-file/build/#illustrative-sample
+    build:
+      context: ${ProjectWorkDir_Hydra}
+      dockerfile: ./.docker/Dockerfile-build
+    container_name: hydra
+    hostname: host-hydra
+    ports:
+      - "4444:4444" # Public port
+      - "4445:4445" # Admin port
+      - "5555:5555" # Port for hydra token user
+    command: serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
+    volumes:
+      - type: volume
+        source: hydra-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ${ProjectWorkDir}/config/hydra/dev/
+        target: /etc/config/hydra
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    restart: unless-stopped
+    depends_on:
+      - hydra-migrate
+    networks:
+      - microservices-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+  hydra-migrate:
+    container_name: hydra-migrate
+    hostname: host-hydra-migrate
+    image: oryd/hydra:v1.11.7
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    command: migrate -c /etc/config/hydra/hydra.yml sql -e --yes
+    volumes:
+      - type: volume
+        source: hydra-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ${ProjectWorkDir}/config/hydra/dev/
+        target: /etc/config/hydra
+    restart: on-failure
+    networks:
+      - microservices-network
+  
+volumes:
+  hydra-sqlite:

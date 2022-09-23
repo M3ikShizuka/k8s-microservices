@@ -1,0 +1,39 @@
+# !!!WARNING!!!
+# Edit config in: ./deploy-config/values.yaml
+#
+# Default values for service-account.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceName: &serviceName db-postgresql-sa
+servicePort: &servicePort 5432
+
+deployments:
+  name: *serviceName
+  replicaCount: 1
+  containers:
+    app:
+      name: *serviceName
+      image: bitnami/postgresql
+      ports:
+      - containerPort: *servicePort
+
+services:
+  name: *serviceName
+  spec:
+    type: NodePort
+    ports:
+    - port: *servicePort
+      protocol: TCP
+      nodePort: 31001
+
+database:
+  storageSize: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+secrets:
+  stringData:
+    POSTGRES_USER: mikhailgorbachev666
+    POSTGRES_PASSWORD: 82M3TLiz7SttMrLu2bTe&
+    POSTGRES_DB: db_service_account

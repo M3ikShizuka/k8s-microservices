@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Release.Name }}-{{ required "Deployment name is required!" .Values.deployments.name }}-deployment
+    app: {{ required "Deployment name is required!" .Values.deployments.name }}
+  name: {{ .Release.Name }}-{{ required "Deployment name is required!" .Values.deployments.name }}-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ required "Deployment name is required!" .Values.deployments.name }}
+        name: {{ .Release.Name }}
+    spec:
+      hostname: host-{{ required "Deployment name is required!" .Values.deployments.name }}
+      restartPolicy: Always
+      containers:
+        - name: {{ required "Container name is required!" .Values.deployments.containers.app.name }}
+          image: {{ required "Container image is required!" .Values.deployments.containers.app.image }}
+          ports: {{ required "Containers ports are required!" .Values.deployments.containers.app.ports | toYaml | trim | nindent 10 }}
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: {{ required "Deployment name is required!" .Values.deployments.name }}-confmap
+          env:
+            # ConfigMap
+            # - name: DSN
+            #   valueFrom:
+            #     configMapKeyRef:
+            #       name: {{ required "Deployment name is required!" .Values.deployments.name }}-confmap
+            #       key: database_dsn
+            ## Secret
+            - name: DSN
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: database_dsn
+                  optional: false # same as default; "mysecret" must exist
+                                  # and include a key named "username"
+            # - name: PGDATABASE
+            #   value: service SERVICE_ACCOUNT_PGDATABASE isn't set!
+            # - name: PGHOST
+            #   value: service SERVICE_ACCOUNT_PGHOST isn't set!
+            # - name: PGPASSWORD
+            #   value: service SERVICE_ACCOUNT_PGPASSWORD isn't set!
+            # - name: PGPORT
+            #   value: service SERVICE_ACCOUNT_PGPORT isn't set!
+            # - name: PGUSER
+            #   value: service SERVICE_ACCOUNT_PGUSER isn't set!

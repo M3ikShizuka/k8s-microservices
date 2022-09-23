@@ -1,0 +1,106 @@
+#SRC: https://www.systutorials.com/how-to-get-the-full-path-and-directory-of-a-makefile-itself/
+#SRC: https://stackoverflow.com/a/31728689
+#SRC: https://dev.to/serhatteker/get-environment-variables-from-a-file-into-makefile-2m5l
+
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir := $(shell echo ${mkfile_path} | rev | cut -d'/' -f3- | rev)
+
+# env
+path:="$(mkfile_dir)/.env"
+SPACE:=$(null) $(null)
+pathStr:=$(subst $(SPACE),\ ,$(path))
+ENV:=$(subst ",,$(pathStr))
+# Environment variables for project
+include $(ENV)
+# Export all variable to sub-make
+export
+
+hydra-dir := ${HYDRA-DIR}
+service-account-dir := ${SERVICE_ACCOUNT-DIR}
+
+$(info .env path: $(ENV))
+$(info hydra-dir: $(hydra-dir))
+$(info service-account-dir: $(service-account-dir))
+
+kube-deploy-command := -f deployments/kubernetes/microservices-network-networkpolicy.yaml \
+-f deployments/kubernetes/service-account-deployment.yaml \
+-f deployments/kubernetes/service-account-service.yaml
+
+#-f ./service-account/deployments/kubernetes/Ingress/ingress-traefik.yaml
+
+# microservice cluster name
+ms-cluster-name := microservice1
+kind-config-loadbalancer-path := ./deployments/kubernetes/kind/kind-cluster-loadbalancer.yaml
+kind-config-nodeport-path := ./deployments/kubernetes/kind/kind-cluster-nodeport.yaml
+
+## Hydra
+docker-image-hydra-name := m3ikshizuka/hydra
+docker-image-hydra-version := 0.0.1
+docker-full-image-hydra-name := ${docker-image-hydra-name}:${docker-image-hydra-version}
+docker-image-hydra-path := $(hydra-dir)/.docker/Dockerfile-build
+docker-image-hydra-debug-path := ./build/docker/Dockerfile-hydra-build-debug
+
+helm-ingress-nginx-chart-name := chart-in1
+helm-chart-ingress-nginx := ./deployments/kubernetes/helm/ingress-nginx
+helm-hydra-chart-name := chart-hydra1
+
+ifndef HELM_HYDRA_DATABASE_CHART_NAME
+    $(error HELM_HYDRA_DATABASE_CHART_NAME is not set)
+endif
+helm-hydra-database-chart-name := ${HELM_HYDRA_DATABASE_CHART_NAME}
+
+ifndef HELM_CHART_HYDRA_DB_POSTGRESQL_DIR
+    $(error HELM_CHART_HYDRA_DB_POSTGRESQL_DIR is not set)
+endif
+helm-chart-hydra-db-postgresql-dir := ${HELM_CHART_HYDRA_DB_POSTGRESQL_DIR}
+
+ifndef HELM_CHART_HYDRA_DIR
+    $(error HELM_CHART_HYDRA_DIR is not set)
+endif
+helm-chart-hydra-dir := ${HELM_CHART_HYDRA_DIR}
+
+## Service-account
+docker-image-sa-name := m3ikshizuka/service-account
+docker-image-sa-version := 0.0.1
+docker-full-image-sa-name := ${docker-image-sa-name}:${docker-image-sa-version}
+docker-image-sa-path := $(service-account-dir)/build/docker/Dockerfile
+docker-image-service-account-debug-path := $(service-account-dir)/build/docker/Dockerfile-service-account-debug
+
+helm-account-service-chart-name := chart-as1
+helm-service-account-database-chart-name := chart-service-account-postgresql
+
+ifndef HELM_CHART_SERVICE_ACCOUNT_DIR
+    $(error HELM_CHART_SERVICE_ACCOUNT_DIR is not set)
+endif
+helm-chart-service-account-dir := ${HELM_CHART_SERVICE_ACCOUNT_DIR}
+
+ifndef HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR
+    $(error HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR is not set)
+endif
+helm-chart-service-account-db-postgresql-dir := ${HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR}
+
+ifndef HELM_CHART_SERVICE_ACCOUNT_DIR
+    $(error HELM_CHART_SERVICE_ACCOUNT_DIR is not set)
+endif
+helm-chart-service-account-dir := ${HELM_CHART_SERVICE_ACCOUNT_DIR}
+
+ifndef HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR
+    $(error HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR is not set)
+endif
+helm-chart-service-account-db-postgresql-dir := ${HELM_CHART_SERVICE_ACCOUNT_DB_POSTGRESQL_DIR}
+
+metallb-configmap-path := $(service-account-dir)/deployments/kubernetes/helm/service-account-chart/templates/config-loadbalancer.yaml
+
+host-account-service-external := account.localhost
+host-account-service-kube := host-service-account
+host-hydra-kube := chart-hydra1-admin.${KUBE_MICROSERVICES_NAMESPACE}.svc.cluster.local
+
+hydra-issuer := http://${host-hydra-kube}:4445
+hydra-login := http://${host-account-service-external}/login
+hydra-consent := http://${host-account-service-external}/login
+hydra-callbacks := http://${host-account-service-external}/callback
+hydra-backchannel-logout-callback := http://${host-account-service-external}/backchannel-logout
+hydra-frontchannel-logout-callback := http://${host-account-service-external}/frontchannel-logout
+hydra-endpoint-admin := http://${host-hydra-kube}:4445
+hydra-client-id := ${HYDRA_CREDENTIALS_SERVICE_ACCOUNT_CLIENT_ID}
+hydra-secret := ${HYDRA_CREDENTIALS_SERVICE_ACCOUNT_SECRET}

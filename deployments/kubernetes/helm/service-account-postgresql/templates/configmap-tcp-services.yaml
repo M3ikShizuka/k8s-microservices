@@ -1,0 +1,7 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: tcp-services
+#   namespace: ingress-nginx
+# data:
+#   {{ required "Containers servicePort are required!" .Values.servicePort }}: "default/{{ .Release.Name }}-{{ .Values.services.name }}-service:{{ required "Containers servicePort are required!" .Values.servicePort }}"

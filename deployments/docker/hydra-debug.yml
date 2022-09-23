@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  hydra:
+    build:
+      dockerfile: ../deployments/Dockerfile-build-debug
+    ports:
+      - "40000:40000" # debug port for OAuth service
+      - "40001:40001" # debug port for hydra example web service (on port: 5555).
+    command: --listen=:40000 --headless=true --api-version=2 exec /usr/bin/hydra -- serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
+    security_opt:
+      # - apparmor:unconfined
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE 
